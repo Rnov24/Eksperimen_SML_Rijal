@@ -1,0 +1,41 @@
+# Workflow buat jalanin preprocessing otomatis
+# Ke-trigger tiap kali ada push ke branch main
+# Hasilnya dataset yang udah di-preprocessing bakal ke-commit balik ke repo
+
+name: Auto Preprocessing
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  preprocessing:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn
+
+    - name: Jalankan preprocessing
+      run: |
+        cd preprocessing
+        python automate_Rijal.py
+
+    - name: Commit hasil preprocessing
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add preprocessing/sleep_efficiency_preprocessing.csv
+        git diff --staged --quiet || git commit -m "Auto: update dataset preprocessing"
+        git push
